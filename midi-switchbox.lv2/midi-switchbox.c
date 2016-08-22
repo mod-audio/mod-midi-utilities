@@ -65,6 +65,10 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     lv2_atom_sequence_clear(self->port_events_out1);
     lv2_atom_sequence_clear(self->port_events_out2);
 
+    // LV2 is so nice...
+    self->port_events_out1->atom.type = self->port_events_in->atom.type;
+    self->port_events_out2->atom.type = self->port_events_in->atom.type;
+
     // Read incoming events
     LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in, ev)
     {
