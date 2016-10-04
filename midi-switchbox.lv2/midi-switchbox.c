@@ -23,8 +23,7 @@ typedef struct {
     // was last run on the 2nd output?
     bool was_second;
 
-    // URID Map feature
-    const LV2_URID_Map* map;
+    // URIDs
     LV2_URID urid_midiEvent;
 
     // control ports
@@ -50,18 +49,21 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     Data* self = (Data*)calloc(1, sizeof(Data));
 
     // Get host features
+    const LV2_URID_Map* map = NULL;
+
     for (int i = 0; features[i]; ++i) {
         if (!strcmp(features[i]->URI, LV2_URID__map)) {
-            self->map = (const LV2_URID_Map*)features[i]->data;
+            map = (const LV2_URID_Map*)features[i]->data;
             break;
         }
     }
-    if (!self->map) {
+    if (!map) {
         free(self);
         return NULL;
     }
 
-    self->urid_midiEvent = self->map->map(self->map->handle, LV2_MIDI__MidiEvent);
+    // Map URIs
+    self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
     return self;
 }
@@ -112,10 +114,11 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     self->port_events_out1->atom.type = self->port_events_in->atom.type;
     self->port_events_out2->atom.type = self->port_events_in->atom.type;
 
+    // Send note-offs if target port changed
     if (self->was_second != target_second)
     {
         LV2_Atom_MIDI msg;
-        memset(&msg, 0, sizeof(msg));
+        memset(&msg, 0, sizeof(LV2_Atom_MIDI));
 
         msg.event.body.size = 3;
         msg.event.body.type = self->urid_midiEvent;
