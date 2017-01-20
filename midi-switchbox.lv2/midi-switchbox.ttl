@@ -8,7 +8,8 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 <http://moddevices.com/plugins/mod-devel/MIDI-Switchbox>
-        a lv2:UtilityPlugin ,
+        a mod:MIDIFilterPlugin ,
+            lv2:UtilityPlugin ,
             lv2:Plugin ;
         doap:name "MIDI Switchbox" ;
         doap:license "GPLv2+" ;
@@ -21,7 +22,7 @@
                         lv2:ControlPort ;
                 lv2:index 0 ;
                 lv2:symbol "target" ;
-                lv2:name "Target"
+                lv2:name "Target" ;
                 lv2:default 0 ;
                 lv2:minimum 0 ;
                 lv2:maximum 1 ;
@@ -29,10 +30,10 @@
                                  lv2:enumeration ;
                 lv2:scalePoint [
                         rdfs:label "Port 1" ;
-                        rdf:value 0
+                        rdf:value 0 ;
                 ] , [
                         rdfs:label "Port 2" ;
-                        rdf:value 1
+                        rdf:value 1 ;
                 ] ;
         ] , [
                 a lv2:InputPort ,
