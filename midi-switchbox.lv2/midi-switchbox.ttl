@@ -8,7 +8,7 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 <http://moddevices.com/plugins/mod-devel/MIDI-Switchbox>
-        a mod:MIDIFilterPlugin ,
+        a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
         doap:name "MIDI Switchbox" ;
