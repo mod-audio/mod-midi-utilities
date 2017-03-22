@@ -18,7 +18,7 @@ typedef enum {
 
 typedef struct {
     // keep track of active notes
-    bool active_notes[127][16];
+    bool active_notes[16*127];
 
     // was last run on the 2nd output?
     bool was_second;
@@ -93,7 +93,7 @@ static void activate(LV2_Handle instance)
 {
     Data* self = (Data*)instance;
 
-    memset(self->active_notes, 0, sizeof(bool)*127*16);
+    memset(self->active_notes, 0, sizeof(bool)*16*127);
 }
 
 static void run(LV2_Handle instance, uint32_t sample_count)
@@ -125,11 +125,11 @@ static void run(LV2_Handle instance, uint32_t sample_count)
 
         for (int i=16; --i >= 0;)
         {
-            for (int j=128; --j >=0;)
+            for (int j=127; --j >=0;)
             {
-                if (self->active_notes[i][j])
+                if (self->active_notes[i*127+j])
                 {
-                    self->active_notes[i][j] = false;
+                    self->active_notes[i*127+j] = false;
 
                     msg.msg[0] = LV2_MIDI_MSG_NOTE_OFF + i;
                     msg.msg[1] = j;
@@ -159,13 +159,17 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         if (ev->body.type == self->urid_midiEvent)
         {
             const uint8_t* const msg = (const uint8_t*)(ev + 1);
-            switch (lv2_midi_message_type(msg))
+
+            const uint8_t channel = msg[0] & 0x0F;
+            const uint8_t status  = msg[0] & 0xF0;
+
+            switch (status)
             {
             case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[msg[0]&0x0F][msg[1]] = true;
+                self->active_notes[channel*127+msg[1]] = true;
                 break;
             case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[msg[0]&0x0F][msg[1]] = false;
+                self->active_notes[channel*127+msg[1]] = false;
                 break;
             default:
                 break;
