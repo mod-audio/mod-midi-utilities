@@ -76,4 +76,4 @@ This switch box receives a MIDI input and channels it through one of its two out
         ] ;
 
         mod:brand "MOD" ;
-        mod:label "MIDI Switchbox" .
+        mod:label "MIDI SwitchBox" .
