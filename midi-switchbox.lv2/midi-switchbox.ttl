@@ -11,9 +11,11 @@
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI Switchbox" ;
+        doap:name "MIDI SwitchBox" ;
         doap:license "GPLv2+" ;
-        rdfs:comment "testing" ;
+        rdfs:comment """
+MIDI version of the MOD SwitchBox.
+This switch box receives a MIDI input and channels it through one of its two outputs.""" ;
         lv2:minorVersion 2 ;
         lv2:microVersion 0 ;
         lv2:optionalFeature lv2:hardRTCapable ;
