@@ -1,35 +1,35 @@
 ######################################
 #
-# midiswitchbox2
+# midi-switchbox3
 #
 ######################################
 
 # where to find the source code - locally in this case
-MIDISWITCHBOX2_SITE_METHOD = local
-MIDISWITCHBOX2_SITE = $($(PKG)_PKGDIR)/
+MIDI_SWITCHBOX3_SITE_METHOD = local
+MIDI_SWITCHBOX3_SITE = $($(PKG)_PKGDIR)/
 
 # even though this is a local build, we still need a version number
 # bump this number if you need to force a rebuild
-MIDISWITCHBOX2_VERSION = 1
+MIDI_SWITCHBOX3_VERSION = 1
 
 # dependencies (list of other buildroot packages, separated by space)
-MIDISWITCHBOX2_DEPENDENCIES =
+MIDI_SWITCHBOX3_DEPENDENCIES =
 
 # LV2 bundles that this package generates (space separated list)
-MIDISWITCHBOX2_BUNDLES = midiswitchbox2.lv2
+MIDI_SWITCHBOX3_BUNDLES = midi-switchbox3.lv2
 
 # call make with the current arguments and path. "$(@D)" is the build directory.
-MIDISWITCHBOX2_TARGET_MAKE = $(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D)/source
+MIDI_SWITCHBOX3_TARGET_MAKE = $(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) -C $(@D)/source
 
 
 # build command
-define MIDISWITCHBOX2_BUILD_CMDS
-	$(MIDISWITCHBOX2_TARGET_MAKE)
+define MIDI_SWITCHBOX3_BUILD_CMDS
+	$(MIDI_SWITCHBOX3_TARGET_MAKE)
 endef
 
 # install command
-define MIDISWITCHBOX2_INSTALL_TARGET_CMDS
-	$(MIDISWITCHBOX2_TARGET_MAKE) install DESTDIR=$(TARGET_DIR)
+define MIDI_SWITCHBOX3_INSTALL_TARGET_CMDS
+	$(MIDI_SWITCHBOX3_TARGET_MAKE) install DESTDIR=$(TARGET_DIR)
 endef
 
 
