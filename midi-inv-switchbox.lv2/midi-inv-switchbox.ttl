@@ -7,16 +7,16 @@
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://moddevices.com/plugins/mod-devel/midiswitchbox>
+<http://moddevices.com/plugins/mod-devel/midi-inv-switchbox>
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI SwitchBox2" ;
+        doap:name "MIDI Inverted SwitchBox" ;
         doap:license "GPLv2+" ;
         rdfs:comment """
 
-MIDI version of the MOD SwitchBox.
-This switch box receives two MIDI inputs and channels it through its outputs.""" ;
+MIDI version of the MOD Inverted SwitchBox.
+This switch box receives two MIDI inputs and channels it through its output.""" ;
 
         lv2:minorVersion 2 ;
         lv2:microVersion 0 ;
@@ -78,4 +78,4 @@ This switch box receives two MIDI inputs and channels it through its outputs."""
         ] ;
 
         mod:brand "MOD" ;
-        mod:label "MIDI SwitchBox2" .
+        mod:label "MIDI InvSwitchBox" .

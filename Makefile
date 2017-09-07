@@ -1,20 +1,26 @@
 
+PREFIX ?= /usr/local
+DESTDIR =
+
 all: plugins
 
 plugins:
-	$(MAKE) -C peak-to-cc.lv2
+	$(MAKE) -C midi-inv-switchbox.lv2
 	$(MAKE) -C midi-switchbox.lv2
+	$(MAKE) -C midi-switchbox3.lv2
+	$(MAKE) -C midi-switchbox4.lv2
+	$(MAKE) -C peak-to-cc.lv2
 
 install:
-	install -d $(DESTDIR)/usr/lib/lv2/peak-to-cc.lv2
-	cp peak-to-cc.lv2/*.ttl $(DESTDIR)/usr/lib/lv2/peak-to-cc.lv2/
-	cp peak-to-cc.lv2/*.so  $(DESTDIR)/usr/lib/lv2/peak-to-cc.lv2/
-
-	install -d $(DESTDIR)/usr/lib/lv2/midi-switchbox.lv2
-	cp midi-switchbox.lv2/*.ttl $(DESTDIR)/usr/lib/lv2/midi-switchbox.lv2/
-	cp midi-switchbox.lv2/*.so  $(DESTDIR)/usr/lib/lv2/midi-switchbox.lv2/
-	cp -r midi-switchbox.lv2/modgui  $(DESTDIR)/usr/lib/lv2/midi-switchbox.lv2/
+	$(MAKE) install PREFIX=$(PREFIX) -C midi-inv-switchbox.lv2
+	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox.lv2
+	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox3.lv2
+	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox4.lv2
+	$(MAKE) install PREFIX=$(PREFIX) -C peak-to-cc.lv2
 
 clean:
-	$(MAKE) clean -C peak-to-cc.lv2
+	$(MAKE) clean -C midi-inv-switchbox.lv2
 	$(MAKE) clean -C midi-switchbox.lv2
+	$(MAKE) clean -C midi-switchbox3.lv2
+	$(MAKE) clean -C midi-switchbox4.lv2
+	$(MAKE) clean -C peak-to-cc.lv2
