@@ -1,14 +1,21 @@
 include ../Makefile.mk
 
+NAME = midiswitchbox
+
 all: build
+build: $(NAME).so
 
-build: midi-switchbox.so
-
-midi-switchbox.so: midi-switchbox.c.o
+$(NAME).so: $(NAME).c.o
 	$(CC) $^ $(LDFLAGS) -shared -Wl,--no-undefined -o $@
 
-midi-switchbox.c.o: midi-switchbox.c
+$(NAME).c.o: $(NAME).c
 	$(CC) $< $(CFLAGS) -c -o $@
 
 clean:
 	rm -f *.o *.so
+
+install: build
+	install -d $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2
+
+	install -m 644 $(NAME).lv2/*.so  $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
+	install -m 644 $(NAME).lv2/*.ttl $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/

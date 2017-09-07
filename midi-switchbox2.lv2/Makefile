@@ -1,44 +1,21 @@
-#!/usr/bin/make -f
-# Makefile for midiswitchbox.lv2 #
-# --------------------------------- #
-# Created by falkTX
-#
+include ../Makefile.mk
 
-include Makefile.mk
-
-# --------------------------------------------------------------
-
-PREFIX  ?= /usr/local
-DESTDIR ?=
-
-# --------------------------------------------------------------
-# Default target is to build all plugins
+NAME = midiswitchbox2
 
 all: build
-build: midiswitchbox-build
+build: $(NAME).so
 
-# --------------------------------------------------------------
-# midiswitchbox build rules
+$(NAME).so: $(NAME).c.o
+	$(CC) $^ $(LDFLAGS) -shared -Wl,--no-undefined -o $@
 
-midiswitchbox-build: midiswitchbox.lv2/midiswitchbox$(LIB_EXT) midiswitchbox.lv2/manifest.ttl
-
-midiswitchbox.lv2/midiswitchbox$(LIB_EXT): midiswitchbox.c
-	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm $(SHARED) -o $@
-
-midiswitchbox.lv2/manifest.ttl: midiswitchbox.lv2/manifest.ttl
-	sed -e "s|@LIB_EXT@|$(LIB_EXT)|" $< > $@
-
-# --------------------------------------------------------------
+$(NAME).c.o: $(NAME).c
+	$(CC) $< $(CFLAGS) -c -o $@
 
 clean:
-	rm -f midiswitchbox.lv2/midiswitchbox$(LIB_EXT) midiswitchbox.lv2/manifest.ttl
-
-# --------------------------------------------------------------
+	rm -f *.o *.so
 
 install: build
-	install -d $(DESTDIR)$(PREFIX)/lib/lv2/midiswitchbox.lv2
+	install -d $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2
 
-	install -m 644 midiswitchbox.lv2/*.so  $(DESTDIR)$(PREFIX)/lib/lv2/midiswitchbox.lv2/
-	install -m 644 midiswitchbox.lv2/*.ttl $(DESTDIR)$(PREFIX)/lib/lv2/midiswitchbox.lv2/
-
-# --------------------------------------------------------------
+	install -m 644 $(NAME).lv2/*.so  $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
+	install -m 644 $(NAME).lv2/*.ttl $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/

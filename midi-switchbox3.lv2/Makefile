@@ -1,43 +1,21 @@
-#!/usr/bin/make -f
-# Makefile for midi-switchbox3.lv2 #
-# --------------------------------- #
-# Created by falkTX
-#
+include ../Makefile.mk
 
-include Makefile.mk
-
-# --------------------------------------------------------------
-
-PREFIX  ?= /usr/local
-DESTDIR ?=
-
-# --------------------------------------------------------------
-# Default target is to build all plugins
+NAME = midiswitchbox3
 
 all: build
-build: midi-switchbox3-build
+build: $(NAME).so
 
-# --------------------------------------------------------------
-# midi-switchbox3 build rules
+$(NAME).so: $(NAME).c.o
+	$(CC) $^ $(LDFLAGS) -shared -Wl,--no-undefined -o $@
 
-midi-switchbox3-build: midi-switchbox3.lv2/midi-switchbox3$(LIB_EXT) midi-switchbox3.lv2/manifest.ttl
-midi-switchbox3.lv2/midi-switchbox3$(LIB_EXT): midi-switchbox3.c
-	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm $(SHARED) -o $@
-
-midi-switchbox3.lv2/manifest.ttl: midi-switchbox3.lv2/manifest.ttl
-	sed -e "s|@LIB_EXT@|$(LIB_EXT)|" $< > $@
-
-# --------------------------------------------------------------
+$(NAME).c.o: $(NAME).c
+	$(CC) $< $(CFLAGS) -c -o $@
 
 clean:
-	rm -f midi-switchbox3.lv2/midi-switchbox3$(LIB_EXT) midi-switchbox3.lv2/manifest.ttl
-
-# --------------------------------------------------------------
+	rm -f *.o *.so
 
 install: build
-	install -d $(DESTDIR)$(PREFIX)/lib/lv2/midi-switchbox3.lv2
+	install -d $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2
 
-	install -m 644 midi-switchbox3.lv2/*.so  $(DESTDIR)$(PREFIX)/lib/lv2/midi-switchbox3.lv2/
-	install -m 644 midi-switchbox3.lv2/*.ttl $(DESTDIR)$(PREFIX)/lib/lv2/midi-switchbox3.lv2/
-
-# --------------------------------------------------------------
+	install -m 644 $(NAME).lv2/*.so  $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
+	install -m 644 $(NAME).lv2/*.ttl $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
