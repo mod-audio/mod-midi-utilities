@@ -197,7 +197,7 @@ static void cleanup(LV2_Handle instance)
 }
 
 static const LV2_Descriptor descriptor = {
-    .URI = "http://moddevices.com/plugins/mod-devel/MIDI-Switchbox",
+    .URI = "http://moddevices.com/plugins/mod-devel/MIDI-Switchbox-1inx2out",
     .instantiate = instantiate,
     .connect_port = connect_port,
     .activate = activate,

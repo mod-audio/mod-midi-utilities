@@ -1,6 +1,6 @@
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 
-<http://moddevices.com/plugins/mod-devel/MIDI-Switchbox>
+<http://moddevices.com/plugins/mod-devel/MIDI-Switchbox-1inx2out>
     modgui:gui [
         modgui:label "Switchbox";
         modgui:brand  "MOD";

@@ -11,7 +11,7 @@
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI Inverted SwitchBox" ;
+        doap:name "MIDI SwitchBox 2inx1out" ;
         doap:license "GPLv2+" ;
         rdfs:comment """
 
@@ -46,7 +46,7 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
                 atom:supports midi:MidiEvent ;
                 lv2:index 1 ;
                 lv2:symbol "in1" ;
-                lv2:name "In 1" ;        
+                lv2:name "In 1" ;
         ] , [
                 a lv2:InputPort ,
                         atom:AtomPort ;
@@ -78,4 +78,4 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
         ] ;
 
         mod:brand "MOD" ;
-        mod:label "MIDI InvSwitchBox" .
+        mod:label "MIDI SwitchBox 2inx1out" .

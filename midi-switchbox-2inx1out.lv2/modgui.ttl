@@ -9,7 +9,7 @@
         modgui:screenshot <modgui/screenshot-midi-switchbox2.png> ;
         modgui:thumbnail <modgui/thumbnail-midi-switchbox2.png> ;
         modgui:brand "MOD" ;
-        modgui:label "MIDI SwitchBox2" ;
+        modgui:label "MIDI SwitchBox 2inx1out" ;
         modgui:model "boxy" ;
         modgui:panel "1-knob" ;
         modgui:color "black" ;

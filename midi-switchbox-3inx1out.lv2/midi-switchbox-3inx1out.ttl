@@ -11,7 +11,7 @@
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI SwitchBox3" ;
+        doap:name "MIDI SwitchBox 3inx1out" ;
         doap:license "GPLv2+" ;
         rdfs:comment """
 
@@ -89,4 +89,4 @@ This switch box receives three MIDI inputs and channels it through its outputs."
         ] ;
 
         mod:brand "MOD" ;
-        mod:label "MIDI SwitchBox3" .
+        mod:label "MIDI SwitchBox 3inx1out" .
