@@ -1,15 +1,15 @@
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
 
-<http://moddevices.com/plugins/mod-devel/MIDI-Switchbox4>
+<http://moddevices.com/plugins/mod-devel/midi-switchbox-4inx2out>
     modgui:gui [
         modgui:resourcesDirectory <modgui> ;
-        modgui:iconTemplate <modgui/icon-midi-switchbox4.html> ;
-        modgui:stylesheet <modgui/stylesheet-midi-switchbox4.css> ;
-        modgui:screenshot <modgui/screenshot-midi-switchbox4.png> ;
-        modgui:thumbnail <modgui/thumbnail-midi-switchbox4.png> ;
+        modgui:iconTemplate <modgui/icon-midi-switchbox2.html> ;
+        modgui:stylesheet <modgui/stylesheet-midi-switchbox2.css> ;
+        modgui:screenshot <modgui/screenshot-midi-switchbox2.png> ;
+        modgui:thumbnail <modgui/thumbnail-midi-switchbox2.png> ;
         modgui:brand "MOD" ;
-        modgui:label "MIDI SwitchBox4" ;
+        modgui:label "MIDI SwitchBox2" ;
         modgui:model "boxy" ;
         modgui:panel "1-knob" ;
         modgui:color "black" ;

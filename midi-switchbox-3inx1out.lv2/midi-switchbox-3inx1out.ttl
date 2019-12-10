@@ -7,16 +7,16 @@
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://moddevices.com/plugins/mod-devel/midi-inv-switchbox>
+<http://moddevices.com/plugins/mod-devel/midi-switchbox-3inx1out>
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI Inverted SwitchBox" ;
+        doap:name "MIDI SwitchBox3" ;
         doap:license "GPLv2+" ;
         rdfs:comment """
 
-MIDI version of the MOD Inverted SwitchBox.
-This switch box receives two MIDI inputs and channels it through its output.""" ;
+MIDI version of the MOD SwitchBox.
+This switch box receives three MIDI inputs and channels it through its outputs.""" ;
 
         lv2:minorVersion 2 ;
         lv2:microVersion 0 ;
@@ -29,7 +29,7 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
                 lv2:name "Target" ;
                 lv2:default 0 ;
                 lv2:minimum 0 ;
-                lv2:maximum 1 ;
+                lv2:maximum 2 ;
                 lv2:portProperty lv2:integer ,
                                  lv2:enumeration ;
                 lv2:scalePoint [
@@ -38,6 +38,9 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
                 ] , [
                         rdfs:label "Port 2" ;
                         rdf:value 1 ;
+                ] , [
+                        rdfs:label "Port 3" ;
+                        rdf:value 2 ;
                 ] ;
         ] , [
                 a lv2:InputPort ,
@@ -56,11 +59,19 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
                 lv2:symbol "in2" ;
                 lv2:name "In 2" ;
         ] , [
-                a lv2:OutputPort ,
+                a lv2:InputPort ,
                         atom:AtomPort ;
                 atom:bufferType atom:Sequence ;
                 atom:supports midi:MidiEvent ;
                 lv2:index 3 ;
+                lv2:symbol "in3" ;
+                lv2:name "In 3" ;
+        ] , [
+                a lv2:OutputPort ,
+                        atom:AtomPort ;
+                atom:bufferType atom:Sequence ;
+                atom:supports midi:MidiEvent ;
+                lv2:index 4 ;
                 lv2:symbol "out" ;
                 lv2:name "Out" ;
         ] ;
@@ -78,4 +89,4 @@ This switch box receives two MIDI inputs and channels it through its output.""" 
         ] ;
 
         mod:brand "MOD" ;
-        mod:label "MIDI InvSwitchBox" .
+        mod:label "MIDI SwitchBox3" .
