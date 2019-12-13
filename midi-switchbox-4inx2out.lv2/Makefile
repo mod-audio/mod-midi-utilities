@@ -20,4 +20,3 @@ install: build
 
 	install -m 644 *.so  $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
 	install -m 644 *.ttl $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
-	#cp -rv modgui $(DESTDIR)$(PREFIX)/lib/lv2/$(NAME).lv2/
