@@ -1,5 +1,5 @@
 
-PREFIX ?= /usr/local
+PREFIX ?=
 DESTDIR =
 
 all: plugins
