@@ -10,12 +10,9 @@
 
 typedef enum {
     PORT_CONTROL_TARGET = 0,
-    PORT_MIDI_IN1,
-    PORT_MIDI_IN2,
-    PORT_MIDI_IN3,
-    PORT_MIDI_IN4,
-    PORT_MIDI_OUT1,
-    PORT_MIDI_OUT2
+    PORT_ATOM_IN1,
+    PORT_ATOM_IN2,
+    PORT_ATOM_OUT
 } PortEnum;
 
 typedef struct {
@@ -34,10 +31,7 @@ typedef struct {
     // atom ports
     const LV2_Atom_Sequence* port_events_in1;
     const LV2_Atom_Sequence* port_events_in2;
-    const LV2_Atom_Sequence* port_events_in3;
-    const LV2_Atom_Sequence* port_events_in4;
-    LV2_Atom_Sequence* port_events_out1;
-    LV2_Atom_Sequence* port_events_out2;
+    LV2_Atom_Sequence* port_events_out;
 } Data;
 
 // Struct for a 3 byte MIDI event
@@ -82,23 +76,14 @@ static void connect_port(LV2_Handle instance, uint32_t port, void* data)
     case PORT_CONTROL_TARGET:
             self->port_target = (const float*)data;
             break;
-    case PORT_MIDI_IN1:
+    case PORT_ATOM_IN1:
             self->port_events_in1 = (const LV2_Atom_Sequence*)data;
             break;
-    case PORT_MIDI_IN2:
+    case PORT_ATOM_IN2:
             self->port_events_in2 = (LV2_Atom_Sequence*)data;
             break;
-    case PORT_MIDI_IN3:
-            self->port_events_in3 = (const LV2_Atom_Sequence*)data;
-            break;
-    case PORT_MIDI_IN4:
-            self->port_events_in4 = (LV2_Atom_Sequence*)data;
-            break;
-    case PORT_MIDI_OUT1:
-            self->port_events_out1 = (LV2_Atom_Sequence*)data;
-            break;
-    case PORT_MIDI_OUT2:
-            self->port_events_out2 = (LV2_Atom_Sequence*)data;
+    case PORT_ATOM_OUT:
+            self->port_events_out = (LV2_Atom_Sequence*)data;
             break;
     }
 }
@@ -117,15 +102,14 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     const bool target_second = (*self->port_target) > 0.5f;
 
     // Get the capacity
-    const uint32_t out_capacity1 = self->port_events_out1->atom.size;
-    const uint32_t out_capacity2 = self->port_events_out2->atom.size;
+    const uint32_t out_capacity = self->port_events_out->atom.size;
+
     // Write an empty Sequence header to the output
-    lv2_atom_sequence_clear(self->port_events_out1);
-    lv2_atom_sequence_clear(self->port_events_out2);
+    lv2_atom_sequence_clear(self->port_events_out);
 
     // LV2 is so nice...
-    self->port_events_out1->atom.type = self->port_events_in1->atom.type;
-    self->port_events_out2->atom.type = self->port_events_in2->atom.type;
+    self->port_events_out->atom.type = self->port_events_in1->atom.type;
+    self->port_events_out->atom.type = self->port_events_in2->atom.type;
 
     // Send note-offs if target port changed
     if (self->was_second != target_second)
@@ -146,11 +130,8 @@ static void run(LV2_Handle instance, uint32_t sample_count)
 
                     msg.msg[0] = LV2_MIDI_MSG_NOTE_OFF + i;
                     msg.msg[1] = j;
-                    lv2_atom_sequence_append_event(self->port_events_out1,
-                                                            out_capacity1,
-                                                  (LV2_Atom_Event*)&msg);
-                    lv2_atom_sequence_append_event(self->port_events_out2,
-                                                            out_capacity2,
+                    lv2_atom_sequence_append_event(self->port_events_out,
+                                                            out_capacity,
                                                   (LV2_Atom_Event*)&msg);
                 }
             }
@@ -184,12 +165,11 @@ static void run(LV2_Handle instance, uint32_t sample_count)
 
         if (!target_second)
         {
-            lv2_atom_sequence_append_event(self->port_events_out1,
-                                           out_capacity1,
+            lv2_atom_sequence_append_event(self->port_events_out,
+                                           out_capacity,
                                            ev);
         }
     }
-    // Read incoming events
     LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in2, ev)
     {
         if (ev->body.type == self->urid_midiEvent)
@@ -212,70 +192,10 @@ static void run(LV2_Handle instance, uint32_t sample_count)
             }
         }
 
-        if (!target_second)
-        {
-            lv2_atom_sequence_append_event(self->port_events_out2,
-                                           out_capacity2,
-                                           ev);
-        }
-    }
-
-    LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in3, ev)
-    {
-        if (ev->body.type == self->urid_midiEvent)
-        {
-            const uint8_t* const msg = (const uint8_t*)(ev + 1);
-
-            const uint8_t channel = msg[0] & 0x0F;
-            const uint8_t status  = msg[0] & 0xF0;
-
-            switch (status)
-            {
-            case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[channel*127+msg[1]] = true;
-                break;
-            case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[channel*127+msg[1]] = false;
-                break;
-            default:
-                break;
-            }
-        }
-
         if (target_second)
         {
-            lv2_atom_sequence_append_event(self->port_events_out1,
-                                           out_capacity1,
-                                           ev);
-        }
-    }
-
-    LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in4, ev)
-    {
-        if (ev->body.type == self->urid_midiEvent)
-        {
-            const uint8_t* const msg = (const uint8_t*)(ev + 1);
-
-            const uint8_t channel = msg[0] & 0x0F;
-            const uint8_t status  = msg[0] & 0xF0;
-
-            switch (status)
-            {
-            case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[channel*127+msg[1]] = true;
-                break;
-            case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[channel*127+msg[1]] = false;
-                break;
-            default:
-                break;
-            }
-        }
-
-        if (target_second)
-        {
-            lv2_atom_sequence_append_event(self->port_events_out2,
-                                           out_capacity2,
+            lv2_atom_sequence_append_event(self->port_events_out,
+                                           out_capacity,
                                            ev);
         }
     }
@@ -287,7 +207,7 @@ static void cleanup(LV2_Handle instance)
 }
 
 static const LV2_Descriptor descriptor = {
-    .URI = "http://moddevices.com/plugins/mod-devel/midi-switchbox-4inx2out",
+    .URI = "http://moddevices.com/plugins/mod-devel/midi-switchbox_2-1",
     .instantiate = instantiate,
     .connect_port = connect_port,
     .activate = activate,

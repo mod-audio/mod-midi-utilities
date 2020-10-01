@@ -7,11 +7,11 @@
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-<http://moddevices.com/plugins/mod-devel/midi-switchbox-4inx2out>
+<http://moddevices.com/plugins/mod-devel/midi-switchbox_2-1_2C>
         a mod:MIDIPlugin ,
             lv2:UtilityPlugin ,
             lv2:Plugin ;
-        doap:name "MIDI SwitchBox 4inx2out" ;
+        doap:name "MIDI SwitchBox 2-1 2C" ;
         doap:license "GPLv2+" ;
         rdfs:comment """
 

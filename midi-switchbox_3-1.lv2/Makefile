@@ -1,6 +1,6 @@
 include ../Makefile.mk
 
-NAME = midi-switchbox-3inx1out
+NAME = midi-switchbox_3-1
 
 all: build
 build: $(NAME).so
