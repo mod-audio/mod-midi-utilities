@@ -5,6 +5,7 @@ DESTDIR =
 all: plugins
 
 plugins:
+	$(MAKE) -C midi-clock-info.lv2
 	$(MAKE) -C midi-switchbox_1-2.lv2
 	$(MAKE) -C midi-switchbox_1-3.lv2
 	$(MAKE) -C midi-switchbox_2-1.lv2
@@ -14,6 +15,7 @@ plugins:
 	$(MAKE) -C peak-to-cc.lv2
 
 install:
+	$(MAKE) install PREFIX=$(PREFIX) -C midi-clock-info.lv2
 	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox_1-2.lv2
 	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox_1-3.lv2
 	$(MAKE) install PREFIX=$(PREFIX) -C midi-switchbox_2-1.lv2
@@ -23,6 +25,7 @@ install:
 	$(MAKE) install PREFIX=$(PREFIX) -C peak-to-cc.lv2
 
 clean:
+	$(MAKE) clean -C midi-clock-info.lv2
 	$(MAKE) clean -C midi-switchbox_1-2.lv2
 	$(MAKE) clean -C midi-switchbox_1-3.lv2
 	$(MAKE) clean -C midi-switchbox_2-1.lv2
