@@ -189,18 +189,17 @@ static void run(LV2_Handle instance, uint32_t sample_count)
                     *self->port_ctrl_out_mtc_seconds = self->mtc.seconds;
                     *self->port_ctrl_out_mtc_minutes = self->mtc.minutes;
                     *self->port_ctrl_out_mtc_hours = self->mtc.hours;
-                    {
 #ifdef DEBUG_PLUGIN_LOG
-                        fprintf(stdout, "MIDI Clock Info: MTC -> %02i:%02i:%02i:%03i\n",
-                                self->mtc.hours, self->mtc.minutes, self->mtc.seconds, self->mtc.frame);
-                        fflush(stdout);
+                    fprintf(stdout, "MIDI Clock Info: MTC -> %02i:%02i:%02i:%03i\n",
+                            self->mtc.hours, self->mtc.minutes, self->mtc.seconds, self->mtc.frame);
+                    fflush(stdout);
 #endif
-                    }
                     break;
                 }
 
                 break;
             }
+
             case 0xF2: // MIDI Song Position Pointer
             {
                 const int value = msg[1] + 128 * msg[2];
@@ -211,9 +210,11 @@ static void run(LV2_Handle instance, uint32_t sample_count)
 #endif
                 break;
             }
+
             case 0xF8: // MIDI Clock "Pulse"
                 // TODO
                 break;
+
             case 0xFA: // MIDI Clock Start
                 *self->port_ctrl_out_play_status = kPlayStatusStart;
 #ifdef DEBUG_PLUGIN_LOG
@@ -221,6 +222,7 @@ static void run(LV2_Handle instance, uint32_t sample_count)
                 fflush(stdout);
 #endif
                 break;
+
             case 0xFB: // MIDI Clock Continue
                 *self->port_ctrl_out_play_status = kPlayStatusContinue;
 #ifdef DEBUG_PLUGIN_LOG
@@ -228,14 +230,13 @@ static void run(LV2_Handle instance, uint32_t sample_count)
                 fflush(stdout);
 #endif
                 break;
+
             case 0xFC: // MIDI Clock Stop
                 *self->port_ctrl_out_play_status = kPlayStatusStop;
 #ifdef DEBUG_PLUGIN_LOG
                 fprintf(stdout, "MIDI Clock Info: play status -> stop\n");
                 fflush(stdout);
 #endif
-                break;
-            default:
                 break;
             }
         }
