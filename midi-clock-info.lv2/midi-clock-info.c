@@ -15,7 +15,10 @@
 typedef enum {
     PORT_RAW_MIDI_IN = 0,
     PORT_CTRL_OUT_PLAY_STATUS,
-    PORT_CTRL_OUT_MIDI_TIME_CLOCK,
+    PORT_CTRL_OUT_MTC_FRAME,
+    PORT_CTRL_OUT_MTC_SECONDS,
+    PORT_CTRL_OUT_MTC_MINUTES,
+    PORT_CTRL_OUT_MTC_HOURS,
     PORT_CTRL_OUT_SONG_POSITION_POINTER,
     // TODO raw BPM based on clock pulse
     // TODO filtered BPM
@@ -39,7 +42,10 @@ typedef struct {
 
     // control ports
     float* port_ctrl_out_play_status;
-    float* port_ctrl_out_midi_time_clock;
+    float* port_ctrl_out_mtc_frame;
+    float* port_ctrl_out_mtc_seconds;
+    float* port_ctrl_out_mtc_minutes;
+    float* port_ctrl_out_mtc_hours;
     float* port_ctrl_out_song_pos_ptr;
 
     // internal state
@@ -93,8 +99,17 @@ static void connect_port(LV2_Handle instance, uint32_t port, void* data)
     case PORT_CTRL_OUT_PLAY_STATUS:
             self->port_ctrl_out_play_status = (float*)data;
             break;
-    case PORT_CTRL_OUT_MIDI_TIME_CLOCK:
-            self->port_ctrl_out_midi_time_clock = (float*)data;
+    case PORT_CTRL_OUT_MTC_FRAME:
+            self->port_ctrl_out_mtc_frame = (float*)data;
+            break;
+    case PORT_CTRL_OUT_MTC_SECONDS:
+            self->port_ctrl_out_mtc_seconds = (float*)data;
+            break;
+    case PORT_CTRL_OUT_MTC_MINUTES:
+            self->port_ctrl_out_mtc_minutes = (float*)data;
+            break;
+    case PORT_CTRL_OUT_MTC_HOURS:
+            self->port_ctrl_out_mtc_hours = (float*)data;
             break;
     case PORT_CTRL_OUT_SONG_POSITION_POINTER:
             self->port_ctrl_out_song_pos_ptr = (float*)data;
@@ -117,7 +132,10 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     if (self->needs_reset)
     {
         *self->port_ctrl_out_play_status = kPlayStatusUndefined;
-        *self->port_ctrl_out_midi_time_clock = 0.0f;
+        *self->port_ctrl_out_mtc_frame = 0.0f;
+        *self->port_ctrl_out_mtc_seconds = 0.0f;
+        *self->port_ctrl_out_mtc_minutes = 0.0f;
+        *self->port_ctrl_out_mtc_hours = 0.0f;
         *self->port_ctrl_out_song_pos_ptr = 0.0f;
         self->needs_reset = false;
 #ifdef DEBUG_PLUGIN_LOG
@@ -137,12 +155,8 @@ static void run(LV2_Handle instance, uint32_t sample_count)
             {
             case 0xF1: // MIDI Time Code (Quarter Frame)
             {
-                const int type  = (msg[2] >> 4) & 0xf;
-                const int value =  msg[2] & 0xf;
-#ifdef DEBUG_PLUGIN_LOG
-                fprintf(stdout, "MIDI Clock Info: type %i, value %i\n", type, value);
-                fflush(stdout);
-#endif
+                const int type  = (msg[1] >> 4) & 0xf;
+                const int value =  msg[1] & 0xf;
 
                 switch (type)
                 {
@@ -169,12 +183,16 @@ static void run(LV2_Handle instance, uint32_t sample_count)
                     break;
                 case 7:
                     self->mtc.hours = self->mtc.hoursLSB + ((value * 16) & 0x1f);
-//                     if (self->mtc.frame == 28)
+
+                    // only update after receiving all bits
+                    *self->port_ctrl_out_mtc_frame = self->mtc.frame;
+                    *self->port_ctrl_out_mtc_seconds = self->mtc.seconds;
+                    *self->port_ctrl_out_mtc_minutes = self->mtc.minutes;
+                    *self->port_ctrl_out_mtc_hours = self->mtc.hours;
                     {
-                        const int rvalue = self->mtc.seconds + (60 * self->mtc.minutes) + (3600 * self->mtc.hours);
-                        *self->port_ctrl_out_midi_time_clock = rvalue;
 #ifdef DEBUG_PLUGIN_LOG
-                        fprintf(stdout, "MIDI Clock Info: MTC -> %i\n", rvalue);
+                        fprintf(stdout, "MIDI Clock Info: MTC -> %02i:%02i:%02i:%03i\n",
+                                self->mtc.hours, self->mtc.minutes, self->mtc.seconds, self->mtc.frame);
                         fflush(stdout);
 #endif
                     }
