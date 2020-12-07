@@ -155,7 +155,6 @@ static void run(LV2_Handle instance, uint32_t sample_count)
                     msg.msg[0] = LV2_MIDI_MSG_NOTE_OFF + i;
                     msg.msg[1] = j;
 
-					printf("send note offs!\n");
 
                     lv2_atom_sequence_append_event(self->port_events_out1,
                                                             out_capacity1,
