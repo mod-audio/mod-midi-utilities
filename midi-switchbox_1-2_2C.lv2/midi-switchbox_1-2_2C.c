@@ -19,11 +19,14 @@ typedef enum {
     PORT_MIDI_OUT4
 } PortEnum;
 
-typedef struct {
-    // keep track of active notes
-    bool active_notes[16*127];
+typedef enum {
+    TARGET_PORT_1_AND_2 = 0,
+    TARGET_PORT_3_AND_4,
+} TargetEnum;
 
-	int prev_target;
+typedef struct {
+
+	int previous_target;
 
     // URIDs
     LV2_URID urid_midiEvent;
@@ -70,7 +73,7 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     // Map URIs
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
-	self->prev_target = 0;
+	self->previous_target = 0;
 
     return self;
 }
@@ -107,9 +110,6 @@ static void connect_port(LV2_Handle instance, uint32_t port, void* data)
 
 static void activate(LV2_Handle instance)
 {
-    Data* self = (Data*)instance;
-
-    memset(self->active_notes, 0, sizeof(bool)*16*127);
 }
 
 static void run(LV2_Handle instance, uint32_t sample_count)
@@ -136,43 +136,46 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     self->port_events_out4->atom.type = self->port_events_in2->atom.type;
 
     // Send note-offs if target port changed
-    if (self->prev_target != target)
+    if (self->previous_target != target)
     {
         LV2_Atom_MIDI msg;
         memset(&msg, 0, sizeof(LV2_Atom_MIDI));
 
         msg.event.body.size = 3;
         msg.event.body.type = self->urid_midiEvent;
+        msg.msg[2] = 0;
 
-        for (int i=16; --i >= 0;)
-        {
-            for (int j=127; --j >=0;)
-            {
-                if (self->active_notes[i*127+j])
-                {
-                    self->active_notes[i*127+j] = false;
-
-                    msg.msg[0] = LV2_MIDI_MSG_NOTE_OFF + i;
-                    msg.msg[1] = j;
-
-
-                    lv2_atom_sequence_append_event(self->port_events_out1,
-                                                            out_capacity1,
-                                                  (LV2_Atom_Event*)&msg);
-                    lv2_atom_sequence_append_event(self->port_events_out2,
-                                                            out_capacity2,
-                                                  (LV2_Atom_Event*)&msg);
-                    lv2_atom_sequence_append_event(self->port_events_out3,
-                                                            out_capacity3,
-                                                  (LV2_Atom_Event*)&msg);
-                    lv2_atom_sequence_append_event(self->port_events_out4,
-                                                            out_capacity4,
-                                                  (LV2_Atom_Event*)&msg);
-                }
-            }
+        for (uint32_t c = 0; c < 0xf; ++c) {
+            msg.msg[0] = 0xb0 | c;
+            msg.msg[1] = 0x40; // sustain pedal
+            lv2_atom_sequence_append_event(self->port_events_out1,
+                    out_capacity1,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out2,
+                    out_capacity2,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out3,
+                    out_capacity3,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out4,
+                    out_capacity4,
+                    (LV2_Atom_Event*)&msg);
+            msg.msg[1] = 0x7b; // all notes off
+            lv2_atom_sequence_append_event(self->port_events_out1,
+                    out_capacity1,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out2,
+                    out_capacity2,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out3,
+                    out_capacity3,
+                    (LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out4,
+                    out_capacity4,
+                    (LV2_Atom_Event*)&msg);
         }
 
-        self->prev_target = target;
+        self->previous_target = target;
     }
 
     // Read incoming events
@@ -180,76 +183,41 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     {
         if (ev->body.type == self->urid_midiEvent)
         {
-            const uint8_t* const msg = (const uint8_t*)(ev + 1);
-
-            const uint8_t channel = msg[0] & 0x0F;
-            const uint8_t status  = msg[0] & 0xF0;
-
-            switch (status)
+            switch ((TargetEnum)target)
             {
-            case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[channel*127+msg[1]] = true;
-                break;
-            case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[channel*127+msg[1]] = false;
-                break;
-            default:
-                break;
+                case TARGET_PORT_1_AND_2:
+                    lv2_atom_sequence_append_event(self->port_events_out1,
+                            out_capacity1,
+                            ev);
+                    break;
+                case TARGET_PORT_3_AND_4:
+                    lv2_atom_sequence_append_event(self->port_events_out3,
+                            out_capacity3,
+                            ev);
+                    break;
             }
         }
-
-		switch (target)
-		{
-			case 0:
-				lv2_atom_sequence_append_event(self->port_events_out1,
-						out_capacity1,
-						ev);
-				break;
-			case 1:
-				lv2_atom_sequence_append_event(self->port_events_out3,
-						out_capacity3,
-						ev);
-				break;
-		}
     }
     // Read incoming events
     LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in2, ev)
     {
         if (ev->body.type == self->urid_midiEvent)
         {
-            const uint8_t* const msg = (const uint8_t*)(ev + 1);
-
-            const uint8_t channel = msg[0] & 0x0F;
-            const uint8_t status  = msg[0] & 0xF0;
-
-            switch (status)
+            switch ((TargetEnum)target)
             {
-            case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[channel*127+msg[1]] = true;
-                break;
-            case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[channel*127+msg[1]] = false;
-                break;
-            default:
-                break;
+                case TARGET_PORT_1_AND_2:
+                    lv2_atom_sequence_append_event(self->port_events_out2,
+                            out_capacity2,
+                            ev);
+                    break;
+                case TARGET_PORT_3_AND_4:
+                    lv2_atom_sequence_append_event(self->port_events_out4,
+                            out_capacity4,
+                            ev);
+                    break;
             }
         }
-
-		switch (target)
-		{
-			case 0:
-				lv2_atom_sequence_append_event(self->port_events_out2,
-						out_capacity2,
-						ev);
-				break;
-			case 1:
-				lv2_atom_sequence_append_event(self->port_events_out4,
-						out_capacity4,
-						ev);
-				break;
-		}
     }
-
 }
 
 static void cleanup(LV2_Handle instance)

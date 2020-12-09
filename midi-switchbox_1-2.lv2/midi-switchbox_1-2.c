@@ -16,12 +16,14 @@ typedef enum {
     PORT_ATOM_OUT2
 } PortEnum;
 
-typedef struct {
-    // keep track of active notes
-    bool active_notes[16*127];
+typedef enum {
+    TARGET_PORT_1 = 0,
+    TARGET_PORT_2
+} TargetEnum;
 
-    // was last run on the 2nd output?
-    bool was_second;
+typedef struct {
+    
+    int previous_target;
 
     // URIDs
     LV2_URID urid_midiEvent;
@@ -65,6 +67,8 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     // Map URIs
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
+    self->previous_target = 0;
+
     return self;
 }
 
@@ -91,16 +95,13 @@ static void connect_port(LV2_Handle instance, uint32_t port, void* data)
 
 static void activate(LV2_Handle instance)
 {
-    Data* self = (Data*)instance;
-
-    memset(self->active_notes, 0, sizeof(bool)*16*127);
 }
 
 static void run(LV2_Handle instance, uint32_t sample_count)
 {
     Data* self = (Data*)instance;
 
-    const bool target_second = (*self->port_target) > 0.5f;
+    const int target = (int)(*self->port_target);
 
     // Get the capacity
     const uint32_t out_capacity_1 = self->port_events_out1->atom.size;
@@ -114,43 +115,41 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     self->port_events_out1->atom.type = self->port_events_in->atom.type;
     self->port_events_out2->atom.type = self->port_events_in->atom.type;
 
-    // Send note-offs if target port changed
-    if (self->was_second != target_second)
+    // Send note-offs if source port changed
+    if (self->previous_target != target)
     {
         LV2_Atom_MIDI msg;
         memset(&msg, 0, sizeof(LV2_Atom_MIDI));
 
         msg.event.body.size = 3;
         msg.event.body.type = self->urid_midiEvent;
+        msg.msg[2] = 0;
 
-        for (int i=16; --i >= 0;)
+        uint32_t out_capacity;
+        LV2_Atom_Sequence* port_events_out = NULL;
+        
+        if (target == TARGET_PORT_1)
         {
-            for (int j=127; --j >=0;)
-            {
-                if (self->active_notes[i*127+j])
-                {
-                    self->active_notes[i*127+j] = false;
-
-                    msg.msg[0] = LV2_MIDI_MSG_NOTE_OFF + i;
-                    msg.msg[1] = j;
-
-                    if (self->was_second)
-                    {
-                        lv2_atom_sequence_append_event(self->port_events_out2,
-                                                       out_capacity_2,
-                                                       (LV2_Atom_Event*)&msg);
-                    }
-                    else
-                    {
-                        lv2_atom_sequence_append_event(self->port_events_out1,
-                                                       out_capacity_1,
-                                                       (LV2_Atom_Event*)&msg);
-                    }
-                }
-            }
+            out_capacity = self->port_events_out2->atom.size;
+            port_events_out = self->port_events_out2;
+        } else {
+            port_events_out = self->port_events_out1;
+            out_capacity = self->port_events_out1->atom.size;
         }
 
-        self->was_second = target_second;
+
+        for (uint32_t c = 0; c < 0xf; ++c) {
+            msg.msg[0] = 0xb0 | c;
+            msg.msg[1] = 0x40; // sustain pedal
+            lv2_atom_sequence_append_event(port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
+            msg.msg[1] = 0x7b; // all notes off
+            lv2_atom_sequence_append_event(port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
+        }
+        self->previous_target = target;
     }
 
     // Read incoming events
@@ -158,35 +157,20 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     {
         if (ev->body.type == self->urid_midiEvent)
         {
-            const uint8_t* const msg = (const uint8_t*)(ev + 1);
-
-            const uint8_t channel = msg[0] & 0x0F;
-            const uint8_t status  = msg[0] & 0xF0;
-
-            switch (status)
+            switch ((TargetEnum)target)
             {
-            case LV2_MIDI_MSG_NOTE_ON:
-                self->active_notes[channel*127+msg[1]] = true;
-                break;
-            case LV2_MIDI_MSG_NOTE_OFF:
-                self->active_notes[channel*127+msg[1]] = false;
-                break;
-            default:
-                break;
-            }
-        }
+                case TARGET_PORT_1:
+                    lv2_atom_sequence_append_event(self->port_events_out1,
+                            out_capacity_1,
+                            ev);
+                    break;
+                case TARGET_PORT_2:
+                    lv2_atom_sequence_append_event(self->port_events_out2,
+                            out_capacity_2,
+                            ev);
+                    break;
 
-        if (target_second)
-        {
-            lv2_atom_sequence_append_event(self->port_events_out2,
-                                           out_capacity_2,
-                                           ev);
-        }
-        else
-        {
-            lv2_atom_sequence_append_event(self->port_events_out1,
-                                           out_capacity_1,
-                                           ev);
+            }
         }
     }
 }
@@ -197,7 +181,7 @@ static void cleanup(LV2_Handle instance)
 }
 
 static const LV2_Descriptor descriptor = {
-    .URI = "http://moddevices.com/plugins/mod-devel/MIDI-Switchbox-1inx2out",
+    .URI = "http://moddevices.com/plugins/mod-devel/MIDI-Switchbox_1-2",
     .instantiate = instantiate,
     .connect_port = connect_port,
     .activate = activate,
