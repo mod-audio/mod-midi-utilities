@@ -128,15 +128,17 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         uint32_t out_capacity;
         LV2_Atom_Sequence* port_events_out = NULL;
         
-        if (target == TARGET_PORT_1)
+        switch ((TargetEnum)self->previous_target)
         {
-            out_capacity = self->port_events_out2->atom.size;
-            port_events_out = self->port_events_out2;
-        } else {
-            port_events_out = self->port_events_out1;
-            out_capacity = self->port_events_out1->atom.size;
+            case TARGET_PORT_1:
+                out_capacity = self->port_events_out1->atom.size;
+                port_events_out = self->port_events_out1;
+                break;
+            case TARGET_PORT_2:
+                out_capacity = self->port_events_out2->atom.size;
+                port_events_out = self->port_events_out2;
+                break;
         }
-
 
         for (uint32_t c = 0; c < 0xf; ++c) {
             msg.msg[0] = 0xb0 | c;

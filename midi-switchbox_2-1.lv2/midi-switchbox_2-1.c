@@ -77,16 +77,16 @@ static void connect_port(LV2_Handle instance, uint32_t port, void* data)
 
     switch (port)
     {
-    case PORT_CONTROL_TARGET:
+        case PORT_CONTROL_TARGET:
             self->port_source = (const float*)data;
             break;
-    case PORT_ATOM_IN1:
+        case PORT_ATOM_IN1:
             self->port_events_in1 = (const LV2_Atom_Sequence*)data;
             break;
-    case PORT_ATOM_IN2:
+        case PORT_ATOM_IN2:
             self->port_events_in2 = (LV2_Atom_Sequence*)data;
             break;
-    case PORT_ATOM_OUT:
+        case PORT_ATOM_OUT:
             self->port_events_out = (LV2_Atom_Sequence*)data;
             break;
     }
@@ -123,15 +123,15 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         msg.msg[2] = 0;
 
         for (uint32_t c = 0; c < 0xf; ++c) {
-			msg.msg[0] = 0xb0 | c;
-			msg.msg[1] = 0x40; // sustain pedal
-			lv2_atom_sequence_append_event(self->port_events_out,
-					out_capacity,
-					(LV2_Atom_Event*)&msg);
+            msg.msg[0] = 0xb0 | c;
+            msg.msg[1] = 0x40; // sustain pedal
+            lv2_atom_sequence_append_event(self->port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
             msg.msg[1] = 0x7b; // all notes off
-			lv2_atom_sequence_append_event(self->port_events_out,
-					out_capacity,
-					(LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
         }
         self->previous_source = source;
     }
@@ -154,8 +154,8 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         if (ev->body.type == self->urid_midiEvent)
         {
             lv2_atom_sequence_append_event(self->port_events_out,
-                                           out_capacity,
-                                           ev);
+                    out_capacity,
+                    ev);
         }
     }
 }
