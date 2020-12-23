@@ -26,7 +26,7 @@ typedef enum {
 
 typedef struct {
 
-	int previous_target;
+    int previous_target;
 
     // URIDs
     LV2_URID urid_midiEvent;
@@ -73,7 +73,7 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     // Map URIs
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
-	self->previous_target = 0;
+    self->previous_target = 0;
 
     return self;
 }

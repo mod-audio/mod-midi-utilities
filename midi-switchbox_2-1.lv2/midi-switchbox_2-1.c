@@ -31,6 +31,7 @@ typedef struct {
     const float* port_source;
 
     // atom ports
+    const LV2_Atom_Sequence* p_port_events_in;
     const LV2_Atom_Sequence* port_events_in1;
     const LV2_Atom_Sequence* port_events_in2;
     LV2_Atom_Sequence* port_events_out;
@@ -67,6 +68,7 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
     self->previous_source = 0;
+    self->p_port_events_in = NULL;
 
     return self;
 }
@@ -136,20 +138,18 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         self->previous_source = source;
     }
 
-    const LV2_Atom_Sequence* port_events_in = NULL;
-
     switch ((SourceEnum)source)
     {
         case SOURCE_1:
-            port_events_in = self->port_events_in1;
+            self->p_port_events_in = self->port_events_in1;
             break;
         case SOURCE_2:
-            port_events_in = self->port_events_in2;
+            self->p_port_events_in = self->port_events_in2;
             break;
     }
 
     // Read incoming events
-    LV2_ATOM_SEQUENCE_FOREACH(port_events_in, ev)
+    LV2_ATOM_SEQUENCE_FOREACH(self->p_port_events_in, ev)
     {
         if (ev->body.type == self->urid_midiEvent)
         {

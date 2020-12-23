@@ -37,6 +37,7 @@ typedef struct {
     LV2_Atom_Sequence* port_events_out1;
     LV2_Atom_Sequence* port_events_out2;
     LV2_Atom_Sequence* port_events_out3;
+    LV2_Atom_Sequence* p_port_events_out;
 } Data;
 
 // Struct for a 3 byte MIDI event
@@ -66,10 +67,12 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
         return NULL;
     }
 
-    self->previous_target = 0;
 
     // Map URIs
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
+
+    self->previous_target = 0;
+    self->p_port_events_out = NULL;
 
     return self;
 }
@@ -112,7 +115,7 @@ static void run(LV2_Handle instance, uint32_t sample_count)
     const uint32_t out_capacity_1 = self->port_events_out1->atom.size;
     const uint32_t out_capacity_2 = self->port_events_out2->atom.size;
     const uint32_t out_capacity_3 = self->port_events_out3->atom.size;
-    
+
 
     // Write an empty Sequence header to the outputs
     lv2_atom_sequence_clear(self->port_events_out1);
@@ -134,32 +137,31 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         msg.msg[2] = 0;
 
         uint32_t out_capacity;
-        LV2_Atom_Sequence* port_events_out = NULL;
 
         switch ((TargetEnum)self->previous_target)
         {
             case TARGET_PORT_1:
                 out_capacity = self->port_events_out1->atom.size;
-                port_events_out = self->port_events_out1;
+                self->p_port_events_out = self->port_events_out1;
                 break;
             case TARGET_PORT_2:
                 out_capacity = self->port_events_out2->atom.size;
-                port_events_out = self->port_events_out2;
+                self->p_port_events_out = self->port_events_out2;
                 break;
             case TARGET_PORT_3:
                 out_capacity = self->port_events_out3->atom.size;
-                port_events_out = self->port_events_out3;
+                self->p_port_events_out = self->port_events_out3;
                 break;
         }
 
         for (uint32_t c = 0; c < 0xf; ++c) {
             msg.msg[0] = 0xb0 | c;
             msg.msg[1] = 0x40; // sustain pedal
-            lv2_atom_sequence_append_event(port_events_out,
+            lv2_atom_sequence_append_event(self->p_port_events_out,
                     out_capacity,
                     (LV2_Atom_Event*)&msg);
             msg.msg[1] = 0x7b; // all notes off
-            lv2_atom_sequence_append_event(port_events_out,
+            lv2_atom_sequence_append_event(self->p_port_events_out,
                     out_capacity,
                     (LV2_Atom_Event*)&msg);
         }

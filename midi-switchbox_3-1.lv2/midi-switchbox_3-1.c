@@ -33,6 +33,7 @@ typedef struct {
     const float* port_source;
 
     // atom ports
+    const LV2_Atom_Sequence* p_port_events_in;
     const LV2_Atom_Sequence* port_events_in1;
     const LV2_Atom_Sequence* port_events_in2;
     const LV2_Atom_Sequence* port_events_in3;
@@ -70,6 +71,7 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
     self->previous_source = 0;
+    self->p_port_events_in = NULL;
 
     return self;
 }
@@ -130,36 +132,34 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         msg.msg[2] = 0;
 
         for (uint32_t c = 0; c < 0xf; ++c) {
-			msg.msg[0] = 0xb0 | c;
-			msg.msg[1] = 0x40; // sustain pedal
-			lv2_atom_sequence_append_event(self->port_events_out,
-					out_capacity,
-					(LV2_Atom_Event*)&msg);
+            msg.msg[0] = 0xb0 | c;
+            msg.msg[1] = 0x40; // sustain pedal
+            lv2_atom_sequence_append_event(self->port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
             msg.msg[1] = 0x7b; // all notes off
-			lv2_atom_sequence_append_event(self->port_events_out,
-					out_capacity,
-					(LV2_Atom_Event*)&msg);
+            lv2_atom_sequence_append_event(self->port_events_out,
+                    out_capacity,
+                    (LV2_Atom_Event*)&msg);
         }
         self->previous_source = source;
     }
 
-    const LV2_Atom_Sequence* port_events_in = NULL;
-
     switch ((SourceEnum)source)
     {
         case SOURCE_1:
-            port_events_in = self->port_events_in1;
+            self->p_port_events_in = self->port_events_in1;
             break;
         case SOURCE_2:
-            port_events_in = self->port_events_in2;
+            self->p_port_events_in = self->port_events_in2;
             break;
         case SOURCE_3:
-            port_events_in = self->port_events_in3;
+            self->p_port_events_in = self->port_events_in3;
             break;
     }
 
     // Read incoming events
-    LV2_ATOM_SEQUENCE_FOREACH(port_events_in, ev)
+    LV2_ATOM_SEQUENCE_FOREACH(self->p_port_events_in, ev)
     {
         if (ev->body.type == self->urid_midiEvent)
         {
