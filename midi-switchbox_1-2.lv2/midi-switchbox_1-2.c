@@ -8,7 +8,6 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 typedef enum {
     PORT_CONTROL_TARGET = 0,
