@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef enum {
     PORT_CONTROL_TARGET = 0,
@@ -35,7 +36,7 @@ typedef struct {
     const LV2_Atom_Sequence* port_events_in;
     LV2_Atom_Sequence* port_events_out1;
     LV2_Atom_Sequence* port_events_out2;
-    LV2_Atom_Sequence* port_events_out;
+    LV2_Atom_Sequence* p_port_events_out;
 } Data;
 
 // Struct for a 3 byte MIDI event
@@ -69,7 +70,7 @@ static LV2_Handle instantiate(const LV2_Descriptor*     descriptor,
     self->urid_midiEvent = map->map(map->handle, LV2_MIDI__MidiEvent);
 
     self->previous_target = 0;
-    self->port_events_out = NULL;
+    self->p_port_events_out = NULL;
 
     return self;
 }
@@ -132,29 +133,29 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         switch ((TargetEnum)self->previous_target)
         {
             case TARGET_PORT_1:
-                out_capacity = self->port_events_out1->atom.size;
-                self->port_events_out = self->port_events_out1;
+                out_capacity = out_capacity_1;
+                self->p_port_events_out = self->port_events_out1;
                 break;
             case TARGET_PORT_2:
-                out_capacity = self->port_events_out2->atom.size;
-                self->port_events_out = self->port_events_out2;
+                out_capacity = out_capacity_2;
+                self->p_port_events_out = self->port_events_out2;
                 break;
         }
 
         for (uint32_t c = 0; c < 0xf; ++c) {
             msg.msg[0] = 0xb0 | c;
             msg.msg[1] = 0x40; // sustain pedal
-            lv2_atom_sequence_append_event(self->port_events_out,
+            lv2_atom_sequence_append_event(self->p_port_events_out,
                     out_capacity,
                     (LV2_Atom_Event*)&msg);
             msg.msg[1] = 0x7b; // all notes off
-            lv2_atom_sequence_append_event(self->port_events_out,
+            lv2_atom_sequence_append_event(self->p_port_events_out,
                     out_capacity,
                     (LV2_Atom_Event*)&msg);
         }
+
         self->previous_target = target;
     }
-
     // Read incoming events
     LV2_ATOM_SEQUENCE_FOREACH(self->port_events_in, ev)
     {

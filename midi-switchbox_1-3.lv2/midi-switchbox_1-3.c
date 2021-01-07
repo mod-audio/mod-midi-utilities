@@ -141,15 +141,15 @@ static void run(LV2_Handle instance, uint32_t sample_count)
         switch ((TargetEnum)self->previous_target)
         {
             case TARGET_PORT_1:
-                out_capacity = self->port_events_out1->atom.size;
+                out_capacity = out_capacity_1;
                 self->p_port_events_out = self->port_events_out1;
                 break;
             case TARGET_PORT_2:
-                out_capacity = self->port_events_out2->atom.size;
+                out_capacity = out_capacity_2;
                 self->p_port_events_out = self->port_events_out2;
                 break;
             case TARGET_PORT_3:
-                out_capacity = self->port_events_out3->atom.size;
+                out_capacity = out_capacity_3;
                 self->p_port_events_out = self->port_events_out3;
                 break;
         }
